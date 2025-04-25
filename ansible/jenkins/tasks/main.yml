@@ -1,0 +1,52 @@
+# Ensure that software packages are up to date
+- name: Upgrade all packages
+  ansible.builtin.yum:
+    name: "*"
+    state: latest
+    exclude: kernel*
+
+- name: Install Amazon Corretto 17 JDK
+  ansible.builtin.yum:
+    name: java-17-amazon-corretto
+    state: present
+    update_cache: yes 
+
+- name: Add Jenkins repository
+  ansible.builtin.get_url:
+    url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+
+- name: Import Jenkins GPG key
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+
+- name: Install the latest version of Jenkins
+  ansible.builtin.yum:
+    name: jenkins
+    state: present
+    update_cache: yes
+
+- name: Ensure Jenkins service is running and enabled
+  ansible.builtin.service:
+    name: jenkins
+    state: started
+    enabled: yes
+
+- name: Gather service facts
+  ansible.builtin.service_facts:
+
+- name: Check if Jenkins is active
+  ansible.builtin.debug:
+    msg: "Jenkins is running"
+  when: ansible_facts.services['jenkins.service'].state == "running"
+
+- name: Get initial admin password
+  ansible.builtin.command: cat /var/lib/jenkins/secrets/initialAdminPassword
+  register: jenkins_password
+  changed_when: false
+
+- name: Display initial admin password
+  ansible.builtin.debug:
+    msg: "Initial admin password: {{ jenkins_password.stdout }}"
