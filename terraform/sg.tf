@@ -5,20 +5,19 @@ resource "aws_security_group" "allow_common_ports" {
 
   ingress {
     description = "SSH from anywhere"
-    from_port   = 22
-    to_port     = 22
+    from_port   = var.allowed_ports[0]
+    to_port     = var.allowed_ports[0]
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.allowed_cidr]  # Use the variable for CIDR block
   }
 
   ingress {
-    description = "HTTP from anywhere"
-    from_port   = 8080
-    to_port     = 8080
+    description = "Web traffic on port 8080"
+    from_port   = var.allowed_ports[1]
+    to_port     = var.allowed_ports[1]
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.allowed_cidr]  # Use the variable for CIDR block
   }
-
 
   egress {
     from_port   = 0

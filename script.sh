@@ -15,18 +15,12 @@ function prepare_bastion() {
     fi
 }
 
-
 function create_infra() {
     cd terraform
     terraform init
     terraform apply -auto-approve
 }
 
-function update_ip() {
-    terraform output -raw ec2 > ../ansible/hosts
-}
-
 
 prepare_bastion
 create_infra
-update_ip

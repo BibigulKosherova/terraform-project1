@@ -14,10 +14,15 @@ data "aws_ami" "amazon" {
 }
 
 
+resource "aws_key_pair" "deployer" {
+  key_name   = "bastion-key"
+  public_key = file("~/.ssh/id_rsa.pub")
+}
+
 
 resource "aws_instance" "group1" {
   ami                    = data.aws_ami.amazon.id
-  instance_type          = "t2.micro"
+  instance_type          = var.instance_type
   subnet_id              = aws_subnet.subnet1.id
   vpc_security_group_ids = [aws_security_group.allow_common_ports.id]
   key_name               = aws_key_pair.deployer.key_name
@@ -46,6 +51,16 @@ resource "null_resource" "ansible_provisioner" {
     command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${aws_instance.group1.public_ip}, ../ansible/main.yml --user ec2-user --private-key ~/.ssh/id_rsa"
   }
 }
+
+terraform {
+  backend "s3" {
+    bucket = "project1-bibigul"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
+    use_lockfile = true 
+  }
+}
+
 
 
 
